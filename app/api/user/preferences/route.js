@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
 import { updateUserPreferences as updatePrefsController } from '@/app/controllers/users';
 import { authenticateUser } from '../../../lib/auth';
 

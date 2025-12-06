@@ -1,4 +1,4 @@
-import { authenticateUserNextJS, findLatestDataUser } from '../../../controllers/users';
+import { findLatestDataUser } from '../../../controllers/users';
 import { authenticateUser } from '../../../lib/auth';
 
 export async function GET(request) {
