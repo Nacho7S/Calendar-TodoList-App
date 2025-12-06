@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../providers/authProvider';
 import { useTheme } from '../providers/themeProvider';
+import Swal from 'sweetalert2';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -18,13 +19,37 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
 
-    const result = await register(username, password, email);
+    try {
+      const result = await register(username, password, email);
 
-    if (result.success) {
-      router.push('/home');
-      router.refresh();
-    } else {
-      setError(result.message);
+      if (result.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Registration successful!',
+          icon: 'success',
+          confirmButtonText: 'OK',
+          timer: 1500,
+          timerProgressBar: true
+        }).then(() => {
+          router.push('/home');
+          router.refresh();
+        });
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: result.message,
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+        setError(result.message);
+      }
+    } catch (err) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Network error. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   };
 

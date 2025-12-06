@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../app/providers/authProvider';
 import { useTheme } from '../../app/providers/themeProvider';
+import Swal from 'sweetalert2';
 
 export default function ProfilePage() {
   const { user, updatePassword, deleteAccount } = useAuth();
@@ -32,7 +33,6 @@ export default function ProfilePage() {
 
     try {
       await updatePassword(currentPassword, newPassword);
-      setSuccess(t('profile.passwordUpdated') || 'Password updated successfully');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmNewPassword('');
@@ -47,15 +47,23 @@ export default function ProfilePage() {
       return;
     }
 
-    if (!window.confirm(t('profile.confirmDelete') || 'Are you sure you want to delete your account? This action cannot be undone.')) {
-      return;
-    }
+    const result = await Swal.fire({
+      title: 'Are you absolutely sure?',
+      text: t('profile.confirmDelete') || 'Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: t('profile.confirmDeletion') || 'Yes, delete my account!',
+      cancelButtonText: t('profile.cancel') || 'Cancel'
+    });
 
-    try {
-      await deleteAccount();
-      // The user will be logged out and redirected by the auth provider
-    } catch (err) {
-      setError(err.message || t('profile.deleteFailed') || 'Failed to delete account');
+    if (result.isConfirmed) {
+      try {
+        await deleteAccount();
+      } catch (err) {
+        setError(err.message || t('profile.deleteFailed') || 'Failed to delete account');
+      }
     }
   };
 
@@ -66,12 +74,6 @@ export default function ProfilePage() {
       {error && (
         <div className="mb-4 p-3 bg-[color:var(--bg-secondary)] text-[color:var(--text-primary)] rounded-md border border-[color:var(--border-color)]">
           {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-4 p-3 bg-[color:var(--bg-secondary)] text-[color:var(--text-primary)] rounded-md border border-[color:var(--border-color)]">
-          {success}
         </div>
       )}
 

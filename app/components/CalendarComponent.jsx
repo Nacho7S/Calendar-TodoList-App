@@ -4,8 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useTheme } from '../providers/themeProvider';
 import Modal from './Modal';
 import AddEventForm from './AddEventForm';
+import Swal from 'sweetalert2';
 
-// Helper functions
+
 const getFirstDayOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 const getDaysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 const getDaysInPreviousMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 0).getDate();
@@ -52,18 +53,18 @@ export default function CalendarComponent() {
     t('calendar.weekdays.saturday') || "Saturday"
   ];
 
-  // Load events on mount
+  
   useEffect(() => {
     fetchCalendarEvents();
   }, []);
 
-  // Set endDate to selectedDate when selectedDate changes
+  
   useEffect(() => {
     setEndDate(selectedDate);
   }, [selectedDate]);
 
 
-  // Fetch events from API
+  
   const fetchCalendarEvents = async () => {
     try {
       setIsLoading(true);
@@ -80,7 +81,7 @@ export default function CalendarComponent() {
     }
   };
 
-  // Toggle event done status
+  
   const toggleEventDone = async (event) => {
     try {
       const response = await fetch(`/api/calendar?id=${event._id || event.id}`, {
@@ -95,15 +96,36 @@ export default function CalendarComponent() {
         setEvents(prevEvents =>
           prevEvents.map(e => e._id === result.data._id ? result.data : e)
         );
+
+        Swal.fire({
+          title: 'Updated!',
+          text: `Event marked as ${result.data.isEventDone ? 'done' : 'not done'}.`,
+          icon: 'success',
+          confirmButtonText: 'OK',
+          timer: 1000,
+          timerProgressBar: true
+        });
       } else {
+        Swal.fire({
+          title: 'Error!',
+          text: result.message || 'Error updating event status',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
         console.error('Error toggling event done status:', result.message);
       }
     } catch (error) {
       console.error('Error toggling event done status:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error updating event status. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   };
 
-  // Generate calendar grid
+  
   const generateCalendarDays = () => {
     const firstDay = getFirstDayOfMonth(currentDate);
     const daysInMonth = getDaysInMonth(currentDate);
@@ -111,7 +133,7 @@ export default function CalendarComponent() {
 
     const days = [];
 
-    // Add previous month's trailing days
+    
     for (let i = firstDay - 1; i >= 0; i--) {
       days.push({
         date: daysInPrevMonth - i,
@@ -120,7 +142,7 @@ export default function CalendarComponent() {
       });
     }
 
-    // Add current month's days
+    
     for (let i = 1; i <= daysInMonth; i++) {
       days.push({
         date: i,
@@ -129,7 +151,7 @@ export default function CalendarComponent() {
       });
     }
 
-    // Add next month's leading days
+    
     const remainingDays = 42 - days.length;
     for (let i = 1; i <= remainingDays; i++) {
       days.push({
@@ -142,7 +164,7 @@ export default function CalendarComponent() {
     return days;
   };
 
-  // Navigation
+  
   const navigateMonth = (direction) => {
     setCurrentDate(prev => {
       const newDate = new Date(prev);
@@ -151,7 +173,7 @@ export default function CalendarComponent() {
     });
   };
 
-  // Event handling
+  
   const handleDateClick = (date) => setSelectedDate(date);
 
   const handleAddEvent = async () => {
@@ -182,11 +204,43 @@ export default function CalendarComponent() {
         if (result.success) {
           fetchCalendarEvents();
           resetForm();
+
+          if (editingEventId) {
+            Swal.fire({
+              title: 'Updated!',
+              text: 'Event has been updated successfully.',
+              icon: 'success',
+              confirmButtonText: 'OK',
+              timer: 1500,
+              timerProgressBar: true
+            });
+          } else {
+            Swal.fire({
+              title: 'Added!',
+              text: 'Event has been added successfully.',
+              icon: 'success',
+              confirmButtonText: 'OK',
+              timer: 1500,
+              timerProgressBar: true
+            });
+          }
         } else {
+          Swal.fire({
+            title: 'Error!',
+            text: result.message || 'Error saving event',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
           console.error('Error saving event:', result.message);
         }
       } catch (error) {
         console.error('Error saving event:', error);
+        Swal.fire({
+          title: 'Error!',
+          text: 'Error saving event. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       }
     }
   };
@@ -204,20 +258,53 @@ export default function CalendarComponent() {
   };
 
   const handleDeleteEvent = async (eventId) => {
-    if (window.confirm('Are you sure you want to delete this event?')) {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
       try {
         const response = await fetch(`/api/calendar?id=${eventId}`, { method: 'DELETE' });
         const result = await response.json();
 
-        if (result.success) fetchCalendarEvents();
-        else console.error('Error deleting event:', result.message);
+        if (result.success) {
+          fetchCalendarEvents();
+          Swal.fire({
+            title: 'Deleted!',
+            text: 'Event has been deleted.',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            timer: 1500,
+            timerProgressBar: true
+          });
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: result.message || 'Error deleting event',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+          console.error('Error deleting event:', result.message);
+        }
       } catch (error) {
         console.error('Error deleting event:', error);
+        Swal.fire({
+          title: 'Error!',
+          text: 'Error deleting event. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       }
     }
   };
 
-  // Reset form
+  
   const resetForm = () => {
     setNewEventTitle("");
     setNewEventDescription("");
@@ -228,26 +315,26 @@ export default function CalendarComponent() {
     setEditingEventId(null);
   };
 
-  // Filter events for a specific date
+  
   const getEventsForDate = (date) => {
 
 
     return events.filter((event) => {
-      // Convert event dates to Date objects if they're strings
+      
       const eventStart = typeof event.date === 'string' ? new Date(event.date) : event.date;
       const eventEnd = typeof event.endDate === 'string' ? new Date(event.endDate) : event.endDate || eventStart;
 
-      // Normalize all dates to midnight for comparison
+      
       const compareDate = new Date(date.toDateString());
       const start = new Date(eventStart.toDateString());
       const end = new Date(eventEnd.toDateString());
 
-      // Check if the date falls within the event's date range (inclusive)
+      
       return compareDate >= start && compareDate <= end;
     });
   };
 
-  // Check if date is today or selected
+  
   const isToday = (date) => {
     const today = new Date();
     return date.toDateString() === today.toDateString();
@@ -515,7 +602,7 @@ export default function CalendarComponent() {
             </button>
             <button
               onClick={() => {
-                // You can add more options here if needed
+                
                 setShowFloatingMenu(false);
               }}
               className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-blue-100 rounded flex items-center"
@@ -524,7 +611,7 @@ export default function CalendarComponent() {
             </button>
             <button
               onClick={() => {
-                // You can add more options here if needed
+                
                 setShowFloatingMenu(false);
               }}
               className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-blue-100 rounded flex items-center"

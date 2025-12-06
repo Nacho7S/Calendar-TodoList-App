@@ -159,7 +159,7 @@ The application uses Next.js middleware to protect routes:
 
 1. **Clone the repository** (if applicable)
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Nacho7S/Calendar-TodoList-App.git
    cd uts
    ```
 
@@ -177,9 +177,9 @@ The application uses Next.js middleware to protect routes:
 3. **Set up environment variables**
    Create a `.env.local` file in the root directory:
    ```env
-   MONGODB_URI=mongodb://localhost:27017/uts_calendar
+   MONGODB_URI=
    JWT_SECRET=your-super-secret-jwt-key-here
-   NEXT_PUBLIC_APP_NAME=NACALENDAR
+   JWT_EXPIRES_IN=
    ```
 
 4. **Run the development server**
@@ -220,21 +220,11 @@ This is a standard Next.js application, so it can be deployed to any platform th
 - Azure Static Web Apps
 - Docker containers
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## 🐛 Known Issues
 
 - None currently reported
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 📞 Support
 
@@ -247,4 +237,3 @@ For support, please open an issue in the repository or contact the development t
 - Inspired by modern calendar applications
 
 ---
-*This README was generated to provide comprehensive documentation for both the backend API and frontend components of the NACALENDAR application.*

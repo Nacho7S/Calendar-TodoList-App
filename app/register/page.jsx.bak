@@ -4,51 +4,27 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../providers/authProvider';
 import { useTheme } from '../providers/themeProvider';
-import Swal from 'sweetalert2';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth();
-  const { t } = useTheme();
+  const { register } = useAuth();
+  const { theme, t } = useTheme();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    try {
-      const result = await login(username, password);
+    const result = await register(username, password, email);
 
-      if (result.success) {
-        Swal.fire({
-          title: 'Success!',
-          text: 'Login successful!',
-          icon: 'success',
-          confirmButtonText: 'OK',
-          timer: 1500,
-          timerProgressBar: true
-        }).then(() => {
-          router.push('/home');
-          router.refresh();
-        });
-      } else {
-        Swal.fire({
-          title: 'Error!',
-          text: result.message,
-          icon: 'error',
-          confirmButtonText: 'OK'
-        });
-        setError(result.message);
-      }
-    } catch (err) {
-      Swal.fire({
-        title: 'Error!',
-        text: 'Network error. Please try again.',
-        icon: 'error',
-        confirmButtonText: 'OK'
-      });
+    if (result.success) {
+      router.push('/home');
+      router.refresh();
+    } else {
+      setError(result.message);
     }
   };
 
@@ -60,7 +36,7 @@ export default function LoginPage() {
             NACALENDAR
           </h1>
           <h2 className="mt-4 text-center text-xl md:text-2xl font-semibold text-[var(--text-primary)]">
-            {t('login.title')}
+            {t('register.title')}
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -69,23 +45,36 @@ export default function LoginPage() {
               <span className="block sm:inline">{error}</span>
             </div>
           )}
-          <input type="hidden" name="remember" value="true" />
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="username" className="sr-only">{t('login.username')}</label>
+              <label htmlFor="username" className="sr-only">{t('register.username')}</label>
               <input
                 id="username"
                 name="username"
                 type="text"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-[var(--border-color)] placeholder-[var(--text-secondary)] text-[var(--text-primary)] bg-[var(--bg-secondary)] rounded-t-md focus:outline-none focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] focus:z-10 sm:text-sm"
-                placeholder={t('login.username') || "Username"}
+                placeholder={t('register.username') || "Username"}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">{t('login.password')}</label>
+              <label htmlFor="email" className="sr-only">{t('register.email')}</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-[var(--border-color)] placeholder-[var(--text-secondary)] text-[var(--text-primary)] bg-[var(--bg-secondary)] focus:outline-none focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] focus:z-10 sm:text-sm"
+                placeholder={t('register.email') || "Email address"}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">{t('register.password')}</label>
               <input
                 id="password"
                 name="password"
@@ -93,7 +82,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-[var(--border-color)] placeholder-[var(--text-secondary)] text-[var(--text-primary)] bg-[var(--bg-secondary)] rounded-b-md focus:outline-none focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] focus:z-10 sm:text-sm"
-                placeholder={t('login.password') || "Password"}
+                placeholder={t('register.password') || "Password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -102,8 +91,8 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-between">
             <div className="text-sm">
-              <a onClick={() => router.push("/register")} className="font-medium text-[var(--accent-color)] hover:text-[color:var(--accent-color)]/[0.8]">
-                {t('login.noAccount')}
+              <a onClick={() => router.push("/login")} className="font-medium text-[var(--accent-color)] hover:text-[color:var(--accent-color)]/[0.8]">
+                {t('register.hasAccount')}
               </a>
             </div>
           </div>
@@ -113,7 +102,7 @@ export default function LoginPage() {
               type="submit"
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-[var(--text-primary)] bg-[var(--accent-color)] hover:bg-[color:var(--accent-color)]/[0.8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-color)]"
             >
-              {t('login.signIn')}
+              {t('register.register')}
             </button>
           </div>
         </form>

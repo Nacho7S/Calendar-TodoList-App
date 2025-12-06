@@ -3,15 +3,13 @@ import { authenticateUser } from '../../../lib/auth';
 
 export async function GET(request) {
   try {
-    // Call the authentication function in the controller
-
     const auth = await authenticateUser(request)
-    
+
    if (!auth.user) {
-      return res.status(404).json({
+      return Response.json({
         success: false,
         message: 'User not found'
-      });
+      }, { status: 404 });
     }
 
     const result = await findLatestDataUser(auth.user.id)

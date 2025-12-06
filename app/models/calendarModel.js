@@ -41,7 +41,7 @@ const calendarSchema = new mongoose.Schema({
     default: false
   }
 }, {
-  timestamps: true // Adds createdAt and updatedAt fields
+  timestamps: true 
 });
 
 const Calendar = mongoose.models.Calendar || mongoose.model('Calendar', calendarSchema);

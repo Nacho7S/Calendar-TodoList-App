@@ -25,18 +25,18 @@ const AddEventForm = ({
   const [dateError, setDateError] = useState('');
   const [timeError, setTimeError] = useState('');
 
-  // Set endDate to selectedDate when the component mounts or selectedDate changes
+ 
   useEffect(() => {
     if (!editingEventId) {
-      // Create a new date object with the same date values to avoid timezone shifts
+      
       const newEndDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
       setEndDate(newEndDate);
     }
   }, [selectedDate, editingEventId]);
 
-  // Validation for date and time
+  
   useEffect(() => {
-    // Check if end date is before start date by comparing year, month, and day only
+    
     const startDateOnly = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
     const endDateOnly = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
 
@@ -46,7 +46,7 @@ const AddEventForm = ({
       setDateError('');
     }
 
-    // Check if end time is before start time on the same day
+    
     if (startDateOnly.getTime() === endDateOnly.getTime()) {
       const [startHours, startMinutes] = newEventTimeStart.split(':').map(Number);
       const [endHours, endMinutes] = newEventTimeDue.split(':').map(Number);
@@ -59,7 +59,7 @@ const AddEventForm = ({
         setTimeError('');
       }
     } else {
-      // Clear time error if dates are different
+      
       setTimeError('');
     }
   }, [selectedDate, endDate, newEventTimeStart, newEventTimeDue, t]);
@@ -83,7 +83,7 @@ const AddEventForm = ({
               value={`${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`} // YYYY-MM-DD format
               onChange={(e) => {
                 const dateStr = e.target.value;
-                // Create date object by parsing the YYYY-MM-DD string directly to avoid timezone shifts
+                
                 const [year, month, day] = dateStr.split('-').map(Number);
                 const date = new Date(year, month - 1, day);
                 setSelectedDate(date);
@@ -114,7 +114,6 @@ const AddEventForm = ({
               value={`${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`}
               onChange={(e) => {
                 const dateStr = e.target.value;
-                // Create date object by parsing the YYYY-MM-DD string directly to avoid timezone shifts
                 const [year, month, day] = dateStr.split('-').map(Number);
                 const date = new Date(year, month - 1, day);
                 setEndDate(date);

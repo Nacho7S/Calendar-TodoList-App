@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTheme } from '../../app/providers/themeProvider';
 import { useAuth } from '../providers/authProvider';
+import Swal from 'sweetalert2';
 
 export default function SettingsPage() {
   const { theme, setTheme, language, setLanguage, availableThemes, availableLanguages, t } = useTheme();
@@ -11,10 +12,36 @@ export default function SettingsPage() {
 
   const handleChangeThemeColour = async (selectedTheme) => {
     setTheme(selectedTheme)
-    
-    
+
+
     if (updateUserPreferences) {
-      await updateUserPreferences(selectedTheme, language)
+      try {
+        const result = await updateUserPreferences(selectedTheme, language);
+        if (result.success) {
+          Swal.fire({
+            title: 'Success!',
+            text: 'Theme updated successfully!',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            timer: 1500,
+            timerProgressBar: true
+          });
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: result.message || 'Error updating theme',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          title: 'Error!',
+          text: 'Error updating theme. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
     }
   }
 
@@ -22,10 +49,35 @@ export default function SettingsPage() {
     const newTheme = e.target.value;
     setTheme(newTheme);
 
-    // Update the user's preferences in the database if authenticated
+
     if (updateUserPreferences) {
-      
-      await updateUserPreferences(newTheme, language);
+      try {
+        const result = await updateUserPreferences(newTheme, language);
+        if (result.success) {
+          Swal.fire({
+            title: 'Success!',
+            text: 'Theme updated successfully!',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            timer: 1500,
+            timerProgressBar: true
+          });
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: result.message || 'Error updating theme',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          title: 'Error!',
+          text: 'Error updating theme. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
     }
   };
 
@@ -33,9 +85,35 @@ export default function SettingsPage() {
     const newLanguage = e.target.value;
     setLanguage(newLanguage);
 
-    // Update the user's preferences in the database if authenticated
+
     if (updateUserPreferences) {
-      await updateUserPreferences(theme, newLanguage);
+      try {
+        const result = await updateUserPreferences(theme, newLanguage);
+        if (result.success) {
+          Swal.fire({
+            title: 'Success!',
+            text: 'Language updated successfully!',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            timer: 1500,
+            timerProgressBar: true
+          });
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: result.message || 'Error updating language',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          title: 'Error!',
+          text: 'Error updating language. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
     }
   };
 

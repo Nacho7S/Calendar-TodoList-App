@@ -19,7 +19,7 @@ export default function EventsModal({
   const [newEventDescription, setNewEventDescription] = useState("");
   const [endDate, setEndDate] = useState(new Date());
 
-  // Initialize form with editing event data if provided
+  
   React.useEffect(() => {
     if (editingEvent) {
       setNewEventTitle(editingEvent.title || "");
@@ -29,7 +29,7 @@ export default function EventsModal({
       setNewEventDescription(editingEvent.description || "");
       setEndDate(new Date(editingEvent.endDate) || new Date());
     } else {
-      // Reset form when not editing
+      
       setNewEventTitle("");
       setNewEventDescription("");
       setNewEventTimeStart("");
@@ -65,7 +65,7 @@ export default function EventsModal({
         const result = await response.json();
         
         if (result.success) {
-          // Update events in parent component
+          
           if (editingEvent) {
             setEvents(prevEvents => 
               prevEvents.map(e => 
@@ -132,7 +132,7 @@ export default function EventsModal({
         newEventDescription={newEventDescription}
         setNewEventDescription={setNewEventDescription}
         selectedDate={selectedDate}
-        setSelectedDate={() => {}} // This won't be used since date is set from parent
+        setSelectedDate={() => {}} 
         endDate={endDate}
         setEndDate={setEndDate}
         editingEventId={editingEvent?._id || editingEvent?.id || null}

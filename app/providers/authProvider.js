@@ -1,6 +1,6 @@
 'use client';
-
 import { createContext, useContext, useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 
 const AuthContext = createContext();
 
@@ -9,42 +9,34 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Check if user is logged in on initial load
+
   useEffect(() => {
     checkAuthStatus();
   }, []);
 
-  // Sync theme and language from user data to localStorage when user changes
   useEffect(() => {
     if (user && user.theme && user.language) {
       const currentTheme = localStorage.getItem("theme");
       const currentLanguage = localStorage.getItem("language");
 
-      // Update localStorage if values differ from user preferences
       if (currentTheme !== user.theme) {
         localStorage.setItem('theme', user.theme);
-        // Dispatch an event to notify the theme provider to update
         window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: user.theme } }));
       }
 
       if (currentLanguage !== user.language) {
         localStorage.setItem('language', user.language);
-        // Dispatch an event to notify the theme provider to update
         window.dispatchEvent(new CustomEvent('languagechange', { detail: { language: user.language } }));
       }
     } else if (user && !user.language || !user) {
-      // If user is logged in but doesn't have language preference, auto-detect
       autoDetectLanguage();
     }
   }, [user]);
 
-  // Function to auto-detect language based on browser preferences
   const autoDetectLanguage = () => {
-    // Check browser language preferences
     const browserLang = navigator.language || navigator.languages[0] || 'en-US';
 
-    // Map browser language to our supported languages
-    let detectedLang = 'en'; // default to English
+    let detectedLang = 'en';
 
     if (browserLang.startsWith('ja')) detectedLang = 'ja';
     else if (browserLang.startsWith('es')) detectedLang = 'es';
@@ -55,14 +47,10 @@ export function AuthProvider({ children }) {
     else if (browserLang.startsWith('ko')) detectedLang = 'ko';
     else if (browserLang.startsWith('en')) detectedLang = 'en';
 
-    console.log(browserLang);
-    
 
-    // Update localStorage with detected language if it differs from current
     const currentLanguage = localStorage.getItem('language');
     if (currentLanguage !== detectedLang) {
       localStorage.setItem('language', detectedLang);
-      // Dispatch an event to notify the theme provider to update
       window.dispatchEvent(new CustomEvent('languagechange', { detail: { language: detectedLang } }));
     }
   };
@@ -81,15 +69,12 @@ export function AuthProvider({ children }) {
           language: data.user.language
         });
 
-        // Set theme and language in localStorage to match user preferences
         if (data.user.theme) {
           localStorage.setItem('theme', data.user.theme);
-          // Dispatch an event to notify the theme provider to update
           window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: data.user.theme } }));
         }
         if (data.user.language) {
           localStorage.setItem('language', data.user.language);
-          // Dispatch an event to notify the theme provider to update
           window.dispatchEvent(new CustomEvent('languagechange', { detail: { language: data.user.language } }));
         }
       } else {
@@ -118,7 +103,7 @@ export function AuthProvider({ children }) {
 
       const data = await response.json();
 
-      
+
 
       if (data.success) {
         setUser({
@@ -129,15 +114,12 @@ export function AuthProvider({ children }) {
           language: data.user.language
         });
 
-        // Set theme and language in localStorage to match user preferences
         if (data.user.theme) {
           localStorage.setItem('theme', data.user.theme);
-          // Dispatch an event to notify the theme provider to update
           window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: data.user.theme } }));
         }
         if (data.user.language) {
           localStorage.setItem('language', data.user.language);
-          // Dispatch an event to notify the theme provider to update
           window.dispatchEvent(new CustomEvent('languagechange', { detail: { language: data.user.language } }));
         }
 
@@ -179,15 +161,12 @@ export function AuthProvider({ children }) {
           language: data.user.language
         });
 
-        // Set theme and language in localStorage to match user preferences
         if (data.user.theme) {
           localStorage.setItem('theme', data.user.theme);
-          // Dispatch an event to notify the theme provider to update
           window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: data.user.theme } }));
         }
         if (data.user.language) {
           localStorage.setItem('language', data.user.language);
-          // Dispatch an event to notify the theme provider to update
           window.dispatchEvent(new CustomEvent('languagechange', { detail: { language: data.user.language } }));
         }
 
@@ -207,16 +186,41 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "Do you really want to log out?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, log out!'
       });
-      setUser(null);
+
+      if (result.isConfirmed) {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+        });
+        setUser(null);
+
+        Swal.fire({
+          title: 'Logged out!',
+          text: 'You have been successfully logged out.',
+          icon: 'success',
+          timer: 1500,
+          timerProgressBar: true
+        });
+      }
     } catch (error) {
       console.error('Logout error:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error logging out. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   };
 
-  // Function to update user theme and language in both DB and sessionStorage
   const updateUserPreferences = async (theme, language) => {
     if (!user) return;
 
@@ -232,22 +236,18 @@ export function AuthProvider({ children }) {
       const data = await response.json();
 
       if (data.success) {
-        // Update user state with new preferences
         setUser(prevUser => ({
           ...prevUser,
           theme: theme,
           language: language
         }));
 
-        // Also update localStorage and dispatch events for consistency
         if (theme) {
           localStorage.setItem('theme', theme);
-          // Dispatch an event to notify the theme provider to update
           window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: theme } }));
         }
         if (language) {
           localStorage.setItem('language', language);
-          // Dispatch an event to notify the theme provider to update
           window.dispatchEvent(new CustomEvent('languagechange', { detail: { language: language } }));
         }
 
@@ -261,6 +261,93 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const updatePassword = async (currentPassword, newPassword) => {
+    try {
+      const response = await fetch('/api/user/change-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Password updated successfully!',
+          icon: 'success',
+          confirmButtonText: 'OK',
+          timer: 1500,
+          timerProgressBar: true
+        });
+        return { success: true, message: data.message };
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: data.message || 'Error updating password',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      console.error('Password update error:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Network error. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return { success: false, message: 'Network error. Please try again.' };
+    }
+  };
+
+  const deleteAccount = async () => {
+    try {
+      const response = await fetch('/api/user/delete-account', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setUser(null);
+        Swal.fire({
+          title: 'Account Deleted!',
+          text: 'Your account has been successfully deleted.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          // Redirect to login page or home page after account deletion
+          window.location.href = '/login';
+        });
+        return { success: true, message: data.message };
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: data.message || 'Error deleting account',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      console.error('Account deletion error:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Network error. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return { success: false, message: 'Network error. Please try again.' };
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -269,6 +356,8 @@ export function AuthProvider({ children }) {
     register,
     logout,
     updateUserPreferences,
+    updatePassword,
+    deleteAccount,
     isAuthenticated: !!user
   };
 

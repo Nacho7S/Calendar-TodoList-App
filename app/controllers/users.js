@@ -1,16 +1,14 @@
 import User from '@/app/models/userModel';
+import Calendar from '../models/calendarModel';
 import { comparePasswordSync, hashPasswordSync } from '@/app/helper/bcrypt';
 import { generateToken, verifyToken } from '@/app/helper/jwt';
 import { connectDB } from '../lib/mongodb';
-import { cookies } from 'next/headers';
 
-// Login function
 export const login = async (req, res) => {
   await connectDB();
   try {
     const { username, password } = req.body;
 
-    // Validate input
     if (!username || !password) {
       return res.status(400).json({
         success: false,
@@ -18,7 +16,6 @@ export const login = async (req, res) => {
       });
     }
 
-    // Find user by username
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(401).json({
@@ -27,7 +24,6 @@ export const login = async (req, res) => {
       });
     }
 
-    // Compare password with hashed password
     const isPasswordValid = comparePasswordSync(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -36,7 +32,6 @@ export const login = async (req, res) => {
       });
     }
 
-    // Generate JWT token
     const token = await generateToken({
       userId: user._id.toString(),
       username: user.username,
@@ -44,7 +39,6 @@ export const login = async (req, res) => {
       language: user.language
     });
 
-    // Return success response with user data (excluding password)
     res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -53,8 +47,8 @@ export const login = async (req, res) => {
         id: user._id.toString(),
         username: user.username,
         email: user.email,
-        theme: user.theme || 'light', // Include theme from DB
-        language: user.language || 'en' // Include language from DB
+        theme: user.theme || 'light',
+        language: user.language || 'en'
       }
     });
 
@@ -68,13 +62,11 @@ export const login = async (req, res) => {
   }
 };
 
-// Register function
 export const register = async (req, res) => {
   await connectDB();
   try {
     const { username, password, email } = req.body;
 
-    // Validate input
     if (!username || !password || !email) {
       return res.status(400).json({
         success: false,
@@ -82,9 +74,8 @@ export const register = async (req, res) => {
       });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ username }, { email }] 
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }]
     });
     if (existingUser) {
       return res.status(409).json({
@@ -93,7 +84,6 @@ export const register = async (req, res) => {
       });
     }
 
-    // Validate password strength (at least 6 characters)
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
@@ -101,26 +91,21 @@ export const register = async (req, res) => {
       });
     }
 
-    // Hash the password
     const hashedPassword = hashPasswordSync(password);
 
-    // Create new user
     const newUser = new User({
       username,
       password: hashedPassword,
       email
     });
 
-    // Save user to database
     const savedUser = await newUser.save();
 
-    // Generate JWT token for the new user
     const token = await generateToken({
       userId: savedUser._id.toString(),
       username: savedUser.username,
     });
 
-    // Return success response with user data (excluding password)
     res.status(201).json({
       success: true,
       message: 'Registration successful',
@@ -129,8 +114,8 @@ export const register = async (req, res) => {
         id: savedUser._id.toString(),
         username: savedUser.username,
         email: savedUser.email,
-        theme: savedUser.theme || 'light', // Include theme from DB
-        language: savedUser.language || 'en' // Include language from DB
+        theme: savedUser.theme || 'light',
+        language: savedUser.language || 'en'
       }
     });
 
@@ -144,18 +129,12 @@ export const register = async (req, res) => {
   }
 };
 
-// Update user preferences (theme and language)
 export const updateUserPreferences = async (req, res) => {
   await connectDB();
   try {
     const { theme, language } = req.body;
-    const userId = req.user.userId; // Assuming user info is attached to req after JWT verification
-    
+    const userId = req.user.userId;
 
-    console.log(theme, language);
-    
-
-    // Get user from database
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -164,7 +143,6 @@ export const updateUserPreferences = async (req, res) => {
       });
     }
 
-    // Validate and update theme if provided
     if (theme !== undefined) {
       const validThemes = ['light', 'dark', 'oled', 'red', 'pink'];
       if (!validThemes.includes(theme)) {
@@ -176,7 +154,6 @@ export const updateUserPreferences = async (req, res) => {
       user.theme = theme;
     }
 
-    // Validate and update language if provided
     if (language !== undefined) {
       const validLanguages = ['en', 'ja', 'es', 'id', 'zh', 'ko', 'de', 'fr'];
       if (!validLanguages.includes(language)) {
@@ -188,7 +165,6 @@ export const updateUserPreferences = async (req, res) => {
       user.language = language;
     }
 
-    // Save updated user
     const updatedUser = await user.save();
 
     return res.status(200).json({
@@ -214,12 +190,10 @@ export const updateUserPreferences = async (req, res) => {
 };
 
 
-// Function to authenticate user for Next.js API routes
 export const findLatestDataUser = async (id) => {
   await connectDB();
-    
+
     try {
-      // Find the user in database to get fresh data
       const user = await User.findById(id).select('-password');
 
       if (!user) {
@@ -231,7 +205,6 @@ export const findLatestDataUser = async (id) => {
         };
       }
 
-      // Return success with user data
       return {
         success: true,
         status: 200,
@@ -252,3 +225,94 @@ export const findLatestDataUser = async (id) => {
       };
     }
 };
+
+export const changePasswordUser = async (req,res) => {
+   await connectDB();
+  try {
+
+    const userId = req.user.userId;
+
+    const { currentPassword, newPassword } = req.body
+
+
+    if (!currentPassword || !newPassword) {
+          return res.status(400).json(
+            { success: false, message: 'Current password and new password are required' },
+          );
+    }
+    
+    if (newPassword.length < 6) {
+      return res.status(400).json(
+        { success: false, message: 'New password must be at least 6 characters long' },
+      );
+    }
+
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
+    }
+
+    const isPasswordValid = comparePasswordSync(currentPassword, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).json(
+        { success: false, message: 'Current password is incorrect' },
+      );
+    }
+    
+
+    const hashedNewPassword = hashPasswordSync(newPassword);
+
+    user.password = hashedNewPassword;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+
+  } catch (err) {
+    console.error('Error changing password:', err);
+    
+    return {
+        success: false,
+        status: 500,
+        message: 'Internal server error',
+        user: null
+      };
+  }
+}
+
+export const deleteCurrentUser = async (req, res) => {
+  await connectDB()
+  try {
+    
+    const user = await User.findById(req.user.id);
+    
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    await 
+
+    await Calendar.deleteMany({ userId: user.id });
+    await User.findByIdAndDelete(user.id);
+    
+    
+
+    return res.status(200).json({
+          success: true,
+          message: 'Account deleted successfully'
+    });
+
+  } catch (err) {
+    return {
+        success: false,
+        status: 500,
+        message: 'Internal server error',
+        user: null
+      };
+  }
+
+}

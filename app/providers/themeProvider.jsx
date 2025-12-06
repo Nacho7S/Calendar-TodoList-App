@@ -19,7 +19,7 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState('light');
   const [language, setLanguage] = useState('en');
 
-  // Load theme and language from localStorage on initial render
+  
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'light';
     const savedLanguage = localStorage.getItem('language') || 'en';
@@ -28,25 +28,25 @@ export const ThemeProvider = ({ children }) => {
     setLanguage(savedLanguage);
   }, []);
 
-  // Update localStorage and apply theme when theme changes
+  
   useEffect(() => {
     localStorage.setItem('theme', theme);
 
-    // Remove any existing theme classes
+    
     document.documentElement.classList.remove('light', 'dark', 'oled', 'red', 'pink');
-    // Add the current theme class
+    
     document.documentElement.classList.add(theme);
 
-    // Update CSS variables based on theme
+    
     updateCSSVariables(theme);
   }, [theme]);
 
-  // Update language in localStorage when it changes
+  
   useEffect(() => {
     localStorage.setItem('language', language);
   }, [language]);
 
-  // Listen for theme and language changes from auth provider
+  
   useEffect(() => {
     const handleThemeChange = (event) => {
       setTheme(event.detail.theme || 'light');
@@ -59,7 +59,7 @@ export const ThemeProvider = ({ children }) => {
     window.addEventListener('themechange', handleThemeChange);
     window.addEventListener('languagechange', handleLanguageChange);
 
-    // Cleanup event listeners
+    
     return () => {
       window.removeEventListener('themechange', handleThemeChange);
       window.removeEventListener('languagechange', handleLanguageChange);
@@ -120,7 +120,7 @@ export const ThemeProvider = ({ children }) => {
     }
   };
 
-  // Function to get translation
+  
   const t = (key) => {
     const keys = key.split('.');
     let translation = translations[language];
@@ -129,7 +129,7 @@ export const ThemeProvider = ({ children }) => {
       if (translation && translation[k]) {
         translation = translation[k];
       } else {
-        return key; // Return the key if translation not found
+        return key; 
       }
     }
 

@@ -1,28 +1,24 @@
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-import { updateUserPreferences as updatePrefsController } from '@/app/controllers/users';
 import { authenticateUser } from '../../../lib/auth';
+import { deleteCurrentUser } from '../../../controllers/users';
+import { cookies } from 'next/headers';
 
-export async function PUT(request) {
+export async function DELETE(request) {
   try {
-    const auth = await authenticateUser(request)
-
-
+    const auth = await authenticateUser(request);
+    
     if (!auth.authenticated) {
       return NextResponse.json({ success: false, message: 'Authentication required' }, { status: 401 });
     }
 
-    const body = await request.json();
-
     const mockReq = {
-      body: body,
-      user: { userId: auth.user.id }
+      user: { id: auth.user.id }
     };
 
     let responseJson;
     let responseStatus = 200;
-
-    const mockRes = {
+    
+     const mockRes = {
       status: (status) => {
         responseStatus = status;
         return mockRes;
@@ -32,13 +28,19 @@ export async function PUT(request) {
         return mockRes;
       }
     };
+    
+    await deleteCurrentUser(mockReq, mockRes);
 
-    await updatePrefsController(mockReq, mockRes);
+    const cookieStore = await cookies();
+    cookieStore.delete('auth-token')
 
     return NextResponse.json(responseJson, { status: responseStatus });
 
   } catch (error) {
-    console.error('Error updating user preferences:', error);
-    return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
+    console.error('Error deleting account:', error);
+    return NextResponse.json(
+      { success: false, message: 'Internal server error during account deletion' },
+      { status: 500 }
+    );
   }
 }
