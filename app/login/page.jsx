@@ -27,7 +27,7 @@ export default function LoginPage() {
           text: 'Login successful!',
           icon: 'success',
           confirmButtonText: 'OK',
-          timer: 1500,
+          timer: 1000,
           timerProgressBar: true
         }).then(() => {
           router.push('/home');

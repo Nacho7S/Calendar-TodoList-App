@@ -70,44 +70,390 @@ app/
 ## 🏗️ Backend API Endpoints
 
 ### Authentication API
-- `POST /api/auth/login` - User login with JWT token generation
-- `POST /api/auth/register` - User registration with password hashing
-- `GET /api/auth/me` - Get current user data
+
+#### Register User
+- **Method**: `POST`
+- **URL**: `/api/auth/register`
+- **Headers**:
+  - `Content-Type: application/json`
+- **Body**:
+  ```json
+  {
+    "username": "johndoe",
+    "email": "user@example.com",
+    "password": "strongpassword"
+  }
+  ```
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "message": "User registered successfully",
+    "user": {
+      "id": "user_id",
+      "username": "johndoe",
+      "email": "user@example.com"
+    }
+  }
+  ```
+
+#### Login User
+- **Method**: `POST`
+- **URL**: `/api/auth/login`
+- **Headers**:
+  - `Content-Type: application/json`
+- **Body**:
+  ```json
+  {
+    "email": "user@example.com",
+    "password": "strongpassword"
+  }
+  ```
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "message": "Login successful",
+    "token": "jwt_token_here",
+    "user": {
+      "id": "user_id",
+      "username": "johndoe",
+      "email": "user@example.com",
+      "theme": "light",
+      "language": "en"
+    }
+  }
+  ```
+- **Note**: Token will be stored in HTTP-only cookie `auth-token`
+
+#### Logout User
+- **Method**: `POST`
+- **URL**: `/api/auth/logout`
+- **Headers**: None required
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "message": "Logout successful"
+  }
+  ```
+- **Note**: Cookie `auth-token` will be deleted
+
+#### Get Current User Info
+- **Method**: `GET`
+- **URL**: `/api/auth/me`
+- **Headers**: Cookie with `auth-token`
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "user": {
+      "id": "user_id",
+      "username": "johndoe",
+      "email": "user@example.com",
+      "theme": "light",
+      "language": "en"
+    }
+  }
+  ```
 
 ### Calendar API
-- `GET /api/calendar` - Get all calendar events for user
-- `GET /api/calendar?id={id}` - Get specific event by ID
-- `GET /api/calendar?startDate={date}&endDate={date}` - Get events in date range
-- `POST /api/calendar` - Create a new calendar event
-- `PUT /api/calendar?id={id}` - Update a calendar event
-- `PUT /api/calendar?id={id}` - Toggle event completion status
-- `DELETE /api/calendar?id={id}` - Delete a calendar event
+
+#### Get All Calendar Events
+- **Method**: `GET`
+- **URL**: `/api/calendar`
+- **Headers**: Cookie with `auth-token`
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "events": [
+      {
+        "id": "event_id",
+        "userId": "user_id",
+        "title": "Event Title",
+        "description": "Event Description",
+        "date": "2023-12-25T00:00:00.000Z",
+        "endDate": "2023-12-25T00:00:00.000Z",
+        "timeDue": "10:00",
+        "timestart": "09:00",
+        "type": "event",
+        "isEventDone": false,
+        "createdAt": "2023-12-01T00:00:00.000Z",
+        "updatedAt": "2023-12-01T00:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+#### Get Calendar Event by ID
+- **Method**: `GET`
+- **URL**: `/api/calendar?id=event_id`
+- **Headers**: Cookie with `auth-token`
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "event": {
+      "id": "event_id",
+      "userId": "user_id",
+      "title": "Event Title",
+      "description": "Event Description",
+      "date": "2023-12-25T00:00:00.000Z",
+      "endDate": "2023-12-25T00:00:00.000Z",
+      "timeDue": "10:00",
+      "timestart": "09:00",
+      "type": "event",
+      "isEventDone": false,
+      "createdAt": "2023-12-01T00:00:00.000Z",
+      "updatedAt": "2023-12-01T00:00:00.000Z"
+    }
+  }
+  ```
+
+#### Get Calendar Events by Date Range
+- **Method**: `GET`
+- **URL**: `/api/calendar?startDate=2023-01-01&endDate=2023-12-31`
+- **Headers**: Cookie with `auth-token`
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "events": [
+      {
+        "id": "event_id",
+        "userId": "user_id",
+        "title": "Event Title",
+        "description": "Event Description",
+        "date": "2023-12-25T00:00:00.000Z",
+        "endDate": "2023-12-25T00:00:00.000Z",
+        "timeDue": "10:00",
+        "timestart": "09:00",
+        "type": "event",
+        "isEventDone": false,
+        "createdAt": "2023-12-01T00:00:00.000Z",
+        "updatedAt": "2023-12-01T00:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+#### Create Calendar Event
+- **Method**: `POST`
+- **URL**: `/api/calendar`
+- **Headers**:
+  - `Content-Type: application/json`
+  - Cookie with `auth-token`
+- **Body**:
+  ```json
+  {
+    "title": "New Event",
+    "description": "Event Description",
+    "date": "2023-12-25T00:00:00.000Z",
+    "endDate": "2023-12-25T00:00:00.000Z",
+    "timeDue": "17:00",
+    "timestart": "09:00",
+    "type": "event"
+  }
+  ```
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "message": "Event created successfully",
+    "event": {
+      "id": "event_id",
+      "userId": "user_id",
+      "title": "New Event",
+      "description": "Event Description",
+      "date": "2023-12-25T00:00:00.000Z",
+      "endDate": "2023-12-25T00:00:00.000Z",
+      "timeDue": "17:00",
+      "timestart": "09:00",
+      "type": "event",
+      "isEventDone": false,
+      "createdAt": "2023-12-01T00:00:00.000Z",
+      "updatedAt": "2023-12-01T00:00:00.000Z"
+    }
+  }
+  ```
+
+#### Update Calendar Event
+- **Method**: `PUT`
+- **URL**: `/api/calendar?id=event_id`
+- **Headers**:
+  - `Content-Type: application/json`
+  - Cookie with `auth-token`
+- **Body**:
+  ```json
+  {
+    "title": "Updated Event",
+    "description": "Updated Description",
+    "date": "2023-12-26T00:00:00.000Z",
+    "endDate": "2023-12-26T00:00:00.000Z",
+    "timeDue": "18:00",
+    "timestart": "10:00",
+    "type": "task",
+    "isEventDone": true
+  }
+  ```
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "message": "Event updated successfully",
+    "event": {
+      "id": "event_id",
+      "userId": "user_id",
+      "title": "Updated Event",
+      "description": "Updated Description",
+      "date": "2023-12-26T00:00:00.000Z",
+      "endDate": "2023-12-26T00:00:00.000Z",
+      "timeDue": "18:00",
+      "timestart": "10:00",
+      "type": "task",
+      "isEventDone": true,
+      "createdAt": "2023-12-01T00:00:00.000Z",
+      "updatedAt": "2023-12-01T00:00:00.000Z"
+    }
+  }
+  ```
+
+#### Toggle Event Done Status
+- **Method**: `PUT`
+- **URL**: `/api/calendar?id=event_id`
+- **Headers**:
+  - `Content-Type: application/json`
+  - Cookie with `auth-token`
+- **Body**:
+  ```json
+  {
+    "isEventDone": true
+  }
+  ```
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "message": "Event status updated successfully",
+    "event": {
+      "id": "event_id",
+      "title": "Event Title",
+      "isEventDone": true
+    }
+  }
+  ```
+
+#### Delete Calendar Event
+- **Method**: `DELETE`
+- **URL**: `/api/calendar?id=event_id`
+- **Headers**: Cookie with `auth-token`
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "message": "Event deleted successfully"
+  }
+  ```
 
 ### User API
-- `PUT /api/user/preferences` - Update user preferences (theme, language)
+
+#### Change Password
+- **Method**: `PUT`
+- **URL**: `/api/user/change-password`
+- **Headers**:
+  - `Content-Type: application/json`
+  - Cookie with `auth-token`
+- **Body**:
+  ```json
+  {
+    "currentPassword": "current_password",
+    "newPassword": "new_strong_password",
+    "confirmNewPassword": "new_strong_password"
+  }
+  ```
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "message": "Password changed successfully"
+  }
+  ```
+
+#### Update User Preferences
+- **Method**: `PUT`
+- **URL**: `/api/user/preferences`
+- **Headers**:
+  - `Content-Type: application/json`
+  - Cookie with `auth-token`
+- **Body**:
+  ```json
+  {
+    "theme": "dark",
+    "language": "en",
+    "notifications": true
+  }
+  ```
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "message": "Preferences updated successfully",
+    "preferences": {
+      "theme": "dark",
+      "language": "en",
+      "notifications": true
+    }
+  }
+  ```
+
+#### Delete User Account
+- **Method**: `DELETE`
+- **URL**: `/api/user/delete-account`
+- **Headers**: Cookie with `auth-token`
+- **Response Success**:
+  ```json
+  {
+    "success": true,
+    "message": "Account deleted successfully"
+  }
+  ```
+- **Note**: Cookie `auth-token` will be deleted after account deletion
+
+### General Notes:
+- All endpoints requiring authentication need the `auth-token` cookie obtained after login
+- If no token is provided or token is invalid, endpoints will respond with status 401 (Unauthorized)
+- Error response format:
+  ```json
+  {
+    "success": false,
+    "message": "Error description here",
+    "error": "Error details"
+  }
+  ```
 
 ## 📊 Database Models
 
 ### User Model
 - `_id`: ObjectId (auto-generated)
-- `username`: String (unique, 3-30 characters)
-- `password`: String (hashed)
-- `email`: String (unique)
+- `username`: String (required, unique, 3-30 characters, trimmed)
+- `password`: String (required, min length: 6)
+- `email`: String (required, unique, trimmed, lowercase)
 - `theme`: String (default: "light")
 - `language`: String (default: "en")
 - `createdAt`, `updatedAt`: Timestamps
 
 ### Calendar Event Model
 - `_id`: ObjectId (auto-generated)
-- `userId`: ObjectId (reference to User)
-- `date`: Date (start date)
-- `endDate`: Date (end date)
-- `description`: String (optional)
-- `timeDue`: String (in HH:MM format)
-- `timestart`: String (in HH:MM format)
+- `userId`: ObjectId (required, reference to User)
+- `date`: Date (required)
+- `description`: String (optional, default: "")
+- `endDate`: Date (required)
+- `timeDue`: String (required, format: "HH:MM")
+- `timestart`: String (required, format: "HH:MM")
 - `title`: String (required)
-- `type`: String (enum: 'meet', 'task', 'event', 'reminder')
-- `isEventDone`: Boolean (default: false)
+- `type`: String (required, enum: 'meet', 'task', 'event', 'reminder')
+- `isEventDone`: Boolean (required, default: false)
 - `createdAt`, `updatedAt`: Timestamps
 
 ## 🔐 Authentication & Authorization

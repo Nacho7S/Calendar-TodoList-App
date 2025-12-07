@@ -588,7 +588,7 @@ export default function CalendarComponent() {
 
       {/* Floating Add Event Button for Mobile */}
       <div className="fixed bottom-6 right-6 sm:hidden z-50">
-        {showFloatingMenu && (
+        {/* {showFloatingMenu && (
           <div className="absolute bottom-16 right-0 mb-2 bg-[var(--bg-primary)] rounded-lg shadow-xl p-2 w-48 border border-[var(--border-color)]">
             <button
               onClick={() => {
@@ -617,11 +617,14 @@ export default function CalendarComponent() {
               className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-blue-100 rounded flex items-center"
             >
               <span className="mr-2">🔔</span> {t('calendar.addReminder') || "Add Reminder"}
-            </button>
+            </button> 
           </div>
-        )}
+        )} */}
         <button
-          onClick={() => setShowFloatingMenu(!showFloatingMenu)}
+          onClick={() =>
+            // setShowFloatingMenu(!showFloatingMenu)
+            setShowAddEventModal(true)
+          }
           className={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
             showFloatingMenu ? 'bg-red-500' : 'bg-green-500'
           } text-white hover:bg-green-600 focus:outline-none`}
